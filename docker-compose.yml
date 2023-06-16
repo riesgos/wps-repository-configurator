@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  configurator:
+    image: wps-repository-configurator
+    container_name: wps-repository-configurator
+    build:
+      context: configurator
+    volumes:
+      - "./configurator:/configurator"
+      - "staticfiles:/var/www"
+      - "./configurations:/var/configurations"
+    environment:
+      CONFIGURATION_EXPORT_FOLDER: "/var/configurations"
+
+
+  nginx:
+    image: nginx:1.20.0-alpine
+    container_name: wps-repository-configurator-nginx
+    ports:
+      - 8000:80
+    volumes:
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"
+      - "staticfiles:/usr/share/nginx/html:ro"
+
+volumes:
+  staticfiles:
