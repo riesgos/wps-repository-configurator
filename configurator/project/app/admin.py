@@ -1,11 +1,12 @@
 import json
 import pathlib
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.urls import reverse
 from django.conf import settings
 from . import models
 from .views import process_to_json
+from .utils import pluralize
 
 class ProcessInputInline(admin.TabularInline):
     model = models.ProcessInput
@@ -17,6 +18,7 @@ def export_json_to_folder(modeladmin, request, queryset):
     export_base_path = pathlib.Path(settings.CONFIGURATION_EXPORT_FOLDER)
     export_base_path.mkdir(parents=True, exist_ok=True)
 
+    export_count = 0
     for inst in queryset:
         result = process_to_json(inst)
         result_name = export_base_path / f"{inst.title}.json"
@@ -25,6 +27,9 @@ def export_json_to_folder(modeladmin, request, queryset):
 
         with result_name.open("wt") as outfile:
             json.dump(result, outfile, indent=4)
+        export_count += 1
+
+    messages.add_message(request, messages.INFO, f"{pluralize(export_count, 'file')} exported")
 
 
 class ProcessAdmin(admin.ModelAdmin):
